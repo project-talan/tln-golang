@@ -1,1 +1,1 @@
-# MVTs - Minimal viable templates: Golang
+# MVTs - Minimal valuable templates: Golang
