@@ -1,0 +1,54 @@
+name: Build
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      build:
+        description: 'Build'
+        required: true
+        type: boolean
+        default: true
+      test:
+        description: 'Unit Tests'
+        required: true
+        type: boolean
+        default: true
+      analysis:
+        description: 'Static Code Analisys'
+        required: true
+        type: boolean
+        default: true
+jobs:
+  build:
+    name: Build & Test
+    if: ${{ github.event.inputs.build == 'true' || github.event.inputs.test == 'true' || github.event.inputs.analysis == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install tln cli
+        run: |
+          npm i -g tln-cli@1.63.0
+          echo '{"detach": true}' > '.tlnrc'
+          tln --version
+          tln install --depends
+      - name: Build
+        if: ${{ github.event.inputs.build == 'true' }}
+        run: tln init:get:build
+      - name: Test
+        if: ${{ github.event.inputs.test == 'true' }}
+        run: tln test
+      - name: Static Code Analysis (SonarCloud)
+        if: ${{ github.event.inputs.analysis == 'true' }}
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
