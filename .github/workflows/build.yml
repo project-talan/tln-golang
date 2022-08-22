@@ -42,7 +42,7 @@ jobs:
           tln install --depends
       - name: Build
         if: ${{ github.event.inputs.build == 'true' }}
-        run: tln init:get:build
+        run: tln get:build
       - name: Test
         if: ${{ github.event.inputs.test == 'true' }}
         run: tln test
